@@ -1,0 +1,57 @@
+# Ignore all intermediate, build, and binary files
+Intermediate/
+DerivedDataCache/
+Saved/
+Binaries/
+Build/
+.cvs/
+.idea/
+.vscode/
+
+# Ignore config and log files
+*.ini
+*.log
+*.tmp
+*.temp
+
+# Ignore compiled source files
+*.obj
+*.pdb
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignore user-specific files
+*.user
+*.userprefs
+*.opensdf
+*.suo
+*.useros
+
+# Ignore Visual Studio files
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Ignore Windows files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore any other system or IDE-specific files
+.idea/
+*.sln
+*.sdf
+*.ipch
+*.aps
+*.ncb
+*.suo
+*.cache
+*.ilk
+*.idb
+
+# Ignore any crash report files
+*.dmp
+*.udk
+*.dump
