@@ -9,6 +9,7 @@ Build/
 .vscode/
 
 # Ignore config and log files
+/Config/EditorInput.ini
 *.log
 *.tmp
 *.temp
