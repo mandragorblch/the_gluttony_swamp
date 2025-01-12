@@ -9,7 +9,6 @@ Build/
 .vscode/
 
 # Ignore config and log files
-*.ini
 *.log
 *.tmp
 *.temp
