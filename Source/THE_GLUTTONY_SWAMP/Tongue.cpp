@@ -12,6 +12,9 @@ ATongue::ATongue()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	RootComponent = Root;
+
 	_tongueSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Tongue"));
 	_tongueSkeletalMesh->SetupAttachment(RootComponent);
 	_tongueSkeletalMesh->BoundsScale = 50.f;
@@ -20,6 +23,8 @@ ATongue::ATongue()
 	triggerShape->OnComponentBeginOverlap.AddDynamic(this, &ATongue::OnOverlapBegin);
 	triggerShape->OnComponentEndOverlap.AddDynamic(this, &ATongue::OnOverlapEnd);
 	triggerShape->SetupAttachment(RootComponent);
+	triggerShape->SetSimulatePhysics(false);
+	triggerShape->SetMobility(EComponentMobility::Movable);
 	triggerShape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	triggerShape->Deactivate();
 
@@ -32,7 +37,6 @@ void ATongue::BeginPlay()
 	Super::BeginPlay();
 
 	_startTime = std::chrono::high_resolution_clock::now();
-
 	tongueCenter = _tongueSkeletalMesh->GetSocketTransform(TEXT("tongueCenter"), ERelativeTransformSpace::RTS_Actor).GetLocation();
 }
 
@@ -63,6 +67,9 @@ void ATongue::Tick(float DeltaTime)
 			current_x_2d * sin(horizontalAngle),
 			current_y_2d
 		);
+
+		triggerShape->SetRelativeLocation(TonguePos + tongueCenter);
+		//triggerShape->SetRelativeRo(TonguePos + tongueCenter);
 	}
 }
 
