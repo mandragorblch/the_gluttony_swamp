@@ -7,8 +7,10 @@ Build/
 .cvs/
 .idea/
 .vscode/
+.vs/
 
 # Ignore config and log files
+.vsconfig
 /Config/EditorInput.ini
 *.log
 *.tmp
