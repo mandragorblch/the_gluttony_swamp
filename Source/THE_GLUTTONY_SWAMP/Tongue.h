@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include <chrono>
+#include <vector>
 
 #include "Tongue.generated.h"
 
 class ABasicFrog;
+class AEatable;
 
 UCLASS()
 class THE_GLUTTONY_SWAMP_API ATongue : public AActor
@@ -78,6 +80,8 @@ public:
 	float y_intersect;
 
 	ABasicFrog* _Frog;
+
+	std::vector<AEatable*> AttachedEatable;
 
 private:
 	std::chrono::high_resolution_clock::time_point _startTime;

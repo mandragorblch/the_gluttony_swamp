@@ -16,4 +16,7 @@ class THE_GLUTTONY_SWAMP_API ATGSGameMode : public AGameMode
 	
 public:
 	ATGSGameMode();
+
+protected:
+	void virtual BeginPlay() override;
 };
