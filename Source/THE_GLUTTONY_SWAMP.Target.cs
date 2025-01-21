@@ -11,5 +11,6 @@ public class THE_GLUTTONY_SWAMPTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		ExtraModuleNames.Add("THE_GLUTTONY_SWAMP");
-	}
+
+    }
 }

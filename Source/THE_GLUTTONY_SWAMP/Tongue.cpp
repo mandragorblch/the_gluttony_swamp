@@ -41,7 +41,7 @@ void ATongue::BeginPlay()
 
 	_startTime = std::chrono::high_resolution_clock::now();
 	tongueCenter = _tongueSkeletalMesh->GetSocketTransform(TEXT("tongueCenter"), ERelativeTransformSpace::RTS_Actor).GetLocation();
-	triggerShape->AttachToComponent(_tongueSkeletalMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("tongueCenter"));
+	//triggerShape->AttachToComponent(_tongueSkeletalMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("tongueCenter"));
 
 	triggerShape->OnComponentBeginOverlap.AddDynamic(this, &ATongue::OnOverlapBegin);
 	triggerShape->OnComponentEndOverlap.AddDynamic(this, &ATongue::OnOverlapEnd);
@@ -73,6 +73,7 @@ void ATongue::Tick(float DeltaTime)
 			current_x_2d * sin(horizontalAngle),
 			current_y_2d
 		);
+		triggerShape->SetRelativeLocation(TonguePos + tongueCenter);
 	}
 
 	{

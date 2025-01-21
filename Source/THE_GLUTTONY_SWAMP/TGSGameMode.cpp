@@ -3,6 +3,9 @@
 
 #include "TGSGameMode.h"
 #include "FrogPlayerController.h"
+//#include "PhysXPublic.h"
+//#include "PhysXIncludes.h"
+//#include "PxPhysicsAPI.h"
 #include "Fly.h"
 
 ATGSGameMode::ATGSGameMode()
@@ -13,6 +16,11 @@ ATGSGameMode::ATGSGameMode()
 	static ConstructorHelpers::FClassFinder<APawn> FrogPawnBPClass(TEXT("/Game/BP/BP_Frog.BP_Frog_C"));
 	//check(FrogPawnBPClass.Class != nullptr);
 	DefaultPawnClass = FrogPawnBPClass.Class;
+
+	//physx::PxFoundation* Foundation = physx::PxCreateFoundation(physx::PX_PHYSICS_VERSION, physx::GPhysXAllocator, physx::GPhysXErrorCallback);
+	//physx::PxPvd* Pvd = physx::PxCreatePvd(*Foundation);
+	//physx::PxPvdTransport* Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
+	//Pvd->connect(*Transport, physx::PxPvdInstrumentationFlag::eALL);
 
 }
 

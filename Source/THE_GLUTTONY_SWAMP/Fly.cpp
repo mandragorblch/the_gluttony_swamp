@@ -29,9 +29,15 @@ AFly::AFly() {
 void AFly::BeginPlay() {
 	Super::BeginPlay();
 
+	_triggerShape->OnComponentBeginOverlap.AddDynamic(this, &AFly::OnOverlapBegin);
 }
 
 void AFly::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
+
+}
+
+void AFly::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
 
 }
