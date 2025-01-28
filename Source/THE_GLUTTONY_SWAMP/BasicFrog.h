@@ -11,6 +11,7 @@
 
 class ATongue;
 class AFrogView;
+class UFrogAnimInstance;
 
 UCLASS()
 class THE_GLUTTONY_SWAMP_API ABasicFrog : public ACharacter
@@ -37,8 +38,12 @@ public:
 	void LookUp(float delta);
 
 	UFUNCTION(BlueprintCallable)
-	void Attack();
+	void AttackPressed();
 
+	UFUNCTION(BlueprintCallable)
+	void AttackReleased();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue", meta = (AllowPrivateAccess = "true"))
 	ATongue* _Tongue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -55,4 +60,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* _CameraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UFrogAnimInstance* _AnimInstance;
 };

@@ -6,7 +6,7 @@
 
 void UFrogAnimInstance::OnStateAnimationEnds()
 {
-	if (State == EFrogState::Jump)
+	if (State != EFrogState::Idle)
 	{
 		State = EFrogState::Idle;
 	}

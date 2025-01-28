@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include <chrono>
 #include <vector>
+#include <deque>
 
 #include "Tongue.generated.h"
 
@@ -35,7 +36,31 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tongue")
 	FVector TongueVel;
 
+	void AttackPressed();
+
+	void AttackReleased();
+
 	void Attack();
+
+	void AttackSetup();
+
+	bool IsAttackShouldEnd();
+
+	void AttackEnd();
+
+	void AttackTick(float DeltaTime);
+
+	void AttackProbe();
+
+	void UpdateAttached();
+
+	void ReturnTongueSetup();
+
+	void ReturnTongueTick(float DeltaTime);
+
+	bool IsTongueReturned();
+
+	void TongueReturnEnd();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USphereComponent* triggerShape;
@@ -62,11 +87,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue")
 	float max_length = 500.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue")
-	float timeToGround = 3.f;
+	float tongueSpeed = 500.f;
 
+	float timeToGround;
 	float horizontalVelocity;
 	float verticalVelocity;
 
+	// for parabola-trajectory
 	float b;
 	float a;
 	float current_x_2d;
@@ -76,18 +103,29 @@ public:
 	float timer;
 	float distanceToCamera;
 
+	float attackTimer;
+
 	float x_intersect;
 	float y_intersect;
 
 	ABasicFrog* _Frog;
 
 	std::vector<AEatable*> AttachedEatable;
+	uint8 cap;
+
+	//for return tongue
+	FVector prevPos;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Eating")
+	float factor;
+	float initDist;
+	float returnTime;
+	float returnVelocity;
 
 private:
-	std::chrono::high_resolution_clock::time_point _startTime;
-
 	UPROPERTY(EditAnywhere, Category = "Tongue", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* _tongueSkeletalMesh;
 
 	bool _isThrown;
+	bool _isPressed;
+	bool _isReturning;
 };

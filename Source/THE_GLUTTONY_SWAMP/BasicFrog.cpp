@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BasicFrog.h"
+#include "FrogAnimInstance.h"
 #include "Tongue.h"
 
 // Sets default values
@@ -37,8 +38,9 @@ void ABasicFrog::BeginPlay()
 	_Tongue = GetWorld()->SpawnActor<ATongue>(BP_Tongue, FVector(0.f), FRotator(0.f));
 	_Tongue->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
 	_Tongue->_Frog = this;
-
 	_Tongue->Setup();
+
+	_AnimInstance = Cast<UFrogAnimInstance>(GetMesh()->GetAnimInstance());
 }
 
 // Called every frame
@@ -47,11 +49,6 @@ void ABasicFrog::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	_CameraComponent->SetRelativeRotation(FRotator(_verticalRotation, _horizontalRotation, 0.f));
-}
-
-void ABasicFrog::Attack()
-{
-	_Tongue->Attack();
 }
 
 // Called to bind functionality to input
@@ -73,4 +70,15 @@ void ABasicFrog::LookUp(float delta)
 {
 	if (abs(_verticalRotation) <= 90.f) _verticalRotation += delta * _mouseSensivity * GetWorld()->GetDeltaSeconds();
 	else _verticalRotation = std::signbit(_verticalRotation) ? -90.f : 90.f;
+}
+
+void ABasicFrog::AttackPressed()
+{
+	_Tongue->AttackPressed();
+	_AnimInstance->State = EFrogState::Eat;
+}
+
+void ABasicFrog::AttackReleased()
+{
+	_Tongue->AttackReleased();
 }

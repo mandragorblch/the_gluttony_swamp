@@ -37,7 +37,9 @@ public:
 
 	ASpectatorPawn* SpectatorPawn;
 
-	void Attack();
+	void AttackPressed();
+
+	void AttackReleased();
 protected:
 	virtual void SetupInputComponent() override;
 
