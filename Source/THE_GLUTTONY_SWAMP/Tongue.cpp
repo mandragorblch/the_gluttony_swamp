@@ -60,26 +60,8 @@ void ATongue::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-<<<<<<< Updated upstream
 	if (_isPressed) {
 		AttackProbe();
-=======
-	if (timer >= timeToGround) {
-		_isThrown = false;
-		TonguePos = FVector(0.0f);
-		triggerShape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		triggerShape->Deactivate();
-	} else {
-		timer += DeltaTime;
-		current_x_2d = horizontalVelocity * timer;
-		current_y_2d = -a * (current_x_2d - x_intersect) * (current_x_2d - x_intersect) + y_intersect;
-		TonguePos = FVector(
-			current_x_2d * cos(horizontalAngle),
-			current_x_2d * sin(horizontalAngle),
-			current_y_2d
-		);
-		triggerShape->SetRelativeLocation(TonguePos + tongueCenter);
->>>>>>> Stashed changes
 	}
 	if(_isThrown) {
 		AttackTick(DeltaTime);

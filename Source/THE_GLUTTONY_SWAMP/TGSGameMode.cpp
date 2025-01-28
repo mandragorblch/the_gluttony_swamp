@@ -14,14 +14,11 @@ ATGSGameMode::ATGSGameMode()
 	//check(FrogPawnBPClass.Class != nullptr);
 	DefaultPawnClass = FrogPawnBPClass.Class;
 
-<<<<<<< Updated upstream
 	PlayerControllerClass = AFrogPlayerController::StaticClass();
 
 	//static ConstructorHelpers::FClassFinder<APawn> SpectatorPawnBPClass(TEXT("/Game/BP/BP_Spectator.BP_Spectator_C"));
 	//SpectatorPawn = SpectatorPawnBPClass.Class;
 
-=======
->>>>>>> Stashed changes
 	//physx::PxFoundation* Foundation = physx::PxCreateFoundation(physx::PX_PHYSICS_VERSION, physx::GPhysXAllocator, physx::GPhysXErrorCallback);
 	//physx::PxPvd* Pvd = physx::PxCreatePvd(*Foundation);
 	//physx::PxPvdTransport* Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
