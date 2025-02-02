@@ -6,6 +6,8 @@
 #include "Animation/AnimInstance.h"
 #include "FrogAnimInstance.generated.h"
 
+class ABasicFrog;
+
 UENUM(BlueprintType)
 enum class EFrogState : uint8 {
 	Idle = 0,
@@ -19,12 +21,18 @@ class THE_GLUTTONY_SWAMP_API UFrogAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
+protected:
+	void virtual NativeInitializeAnimation() override;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frog Params")
 	float Speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frog Params")
 	EFrogState State;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frog Params")
+	ABasicFrog* OwnedPawn;
 
 	UFUNCTION(BlueprintCallable)
 	void OnStateAnimationEnds();

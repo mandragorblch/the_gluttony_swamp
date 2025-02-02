@@ -63,4 +63,24 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UFrogAnimInstance* _AnimInstance;
+
+	void StartEatAnimation();
+
+	void UpdateEatAnimation(float DeltaTime);
+
+	void EndEatAnimation();
+
+	//per second
+	float EatAnimationSpeed = 3.f;
+
+	//animation flag
+	bool mouthClosing;
+	//animation flag
+	bool mouthOpening;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	float EatStateFactor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	float EatAnimationLength = 0.25f;
 };

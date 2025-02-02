@@ -102,6 +102,7 @@ public:
 	float horizontalAngle;
 	float timer;
 	float distanceToCamera;
+	bool lastProbeSucceed;
 
 	float attackTimer;
 
@@ -121,11 +122,11 @@ public:
 	float returnTime;
 	float returnVelocity;
 
-private:
-	UPROPERTY(EditAnywhere, Category = "Tongue", meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* _tongueSkeletalMesh;
-
 	bool _isThrown;
 	bool _isPressed;
 	bool _isReturning;
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Tongue", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* _tongueSkeletalMesh;
 };

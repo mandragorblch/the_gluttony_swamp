@@ -49,6 +49,8 @@ void ABasicFrog::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	_CameraComponent->SetRelativeRotation(FRotator(_verticalRotation, _horizontalRotation, 0.f));
+
+	UpdateEatAnimation(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -75,10 +77,40 @@ void ABasicFrog::LookUp(float delta)
 void ABasicFrog::AttackPressed()
 {
 	_Tongue->AttackPressed();
-	_AnimInstance->State = EFrogState::Eat;
+	StartEatAnimation();
 }
 
 void ABasicFrog::AttackReleased()
 {
-	_Tongue->AttackReleased();
+	if (_Tongue->lastProbeSucceed) {
+		_Tongue->AttackReleased();
+	}
+	else {
+		EndEatAnimation();
+	}
+}
+
+void ABasicFrog::StartEatAnimation()
+{
+	_AnimInstance->State = EFrogState::Eat;
+	EatStateFactor = 0.f;
+	mouthOpening = true;
+}
+
+void ABasicFrog::UpdateEatAnimation(float DeltaTime)
+{
+	if (mouthOpening) {
+		EatStateFactor += EatAnimationSpeed * DeltaTime;
+		mouthOpening = EatStateFactor < 1.0f;
+		if (mouthOpening == false) EatStateFactor = 1.0f;
+	} else if (mouthClosing) {
+		EatStateFactor -= EatAnimationSpeed * DeltaTime;
+		mouthClosing = EatStateFactor > 0.f;
+		if (mouthClosing == false) EndEatAnimation();
+	}
+}
+
+void ABasicFrog::EndEatAnimation()
+{
+	_AnimInstance->State = EFrogState::Idle;
 }

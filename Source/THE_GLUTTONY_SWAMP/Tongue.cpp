@@ -32,6 +32,8 @@ ATongue::ATongue()
 	cap = 5;
 	AttachedEatable.reserve(cap);
 
+	returnTime = 1.f;
+
 	_isThrown = false;
 	_isPressed = false;
 }
@@ -78,13 +80,12 @@ void ATongue::AttackPressed()
 	if(!_isPressed && !_isThrown && !_isReturning){
 		attackTimer = 0.f;
 		_isPressed = true;
-		factor = 1.0f;
 	}
 }
 
 void ATongue::AttackReleased()
 {
-	if (_isPressed && !_isThrown && !_isReturning) {
+	if (_isPressed && !_isReturning) {
 		_isPressed = false;
 		Attack();
 	}
@@ -140,6 +141,7 @@ void ATongue::AttackTick(float DeltaTime)
 
 void ATongue::AttackProbe()
 {
+	lastProbeSucceed = false;
 	float x_intersect_test = 0.5f * max_length;
 	float alpha = _Frog->_horizontalRotation * (PI / 180.f);
 	float beta = _Frog->_verticalRotation * (PI / 180.f);
@@ -162,6 +164,7 @@ void ATongue::AttackProbe()
 				horizontalVelocity = tongueSpeed * cosf(verticalAngle);
 				timeToGround = max_length / horizontalVelocity;
 				horizontalAngle -= PI / 2.0f;//spring arm rotation
+				lastProbeSucceed = true;
 			}
 		}
 	}
@@ -179,30 +182,37 @@ void ATongue::ReturnTongueSetup()
 	_isReturning = true;
 	prevPos = TonguePos;
 	initDist = (TonguePos - tongueCenter).Length();
-	returnTime = 1.f;
+	factor = 1.0f;
 	returnVelocity = initDist / returnTime;
 }
 
 void ATongue::ReturnTongueTick(float DeltaTime)
 {
+	factor -= (returnVelocity * DeltaTime) / initDist;
 	if (IsTongueReturned()) {
 		TongueReturnEnd();
+		factor = 0.f;
+		TonguePos = FVector(0.f, 0.f, 0.f);
 		return;
 	}
-	factor -= (returnVelocity * DeltaTime) / initDist;
 	TonguePos = factor * prevPos;
 }
 
 bool ATongue::IsTongueReturned()
 {
-	return factor <= 0.f;
+	return (_isReturning && factor <= 0.f);
 }
 
 void ATongue::TongueReturnEnd()
 {
 	_isReturning = false;
 	//TODO SCORE
+	//TODO unused fly array
+	for (uint8 it = 0; it < AttachedEatable.size(); ++it) {
+		AttachedEatable[it]->SetActorHiddenInGame(true);
+	}
 	AttachedEatable.clear();
+	_Frog->mouthClosing = true;
 }
 
 void ATongue::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
