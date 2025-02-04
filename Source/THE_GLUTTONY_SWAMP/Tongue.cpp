@@ -15,9 +15,6 @@ ATongue::ATongue()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	RootComponent = Root;
-
 	_tongueSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Tongue"));
 	_tongueSkeletalMesh->SetupAttachment(RootComponent);
 	_tongueSkeletalMesh->BoundsScale = 50.f;
@@ -34,7 +31,7 @@ ATongue::ATongue()
 
 	returnTime = 1.f;
 
-	_isThrown = false;
+	state = TONGUE_STATE::Idle;
 	_isPressed = false;
 }
 
@@ -53,8 +50,8 @@ void ATongue::BeginPlay()
 void ATongue::Setup()
 {
 	cameraPos = _Frog->_SpringArmComponent->GetRelativeTransform().GetLocation();
-	distanceToCamera = cameraPos.Y - tongueCenter.Y;
-	b = cameraPos.Z - tongueCenter.Z;
+	distanceDiff = cameraPos.Y - tongueCenter.Y;
+	heightDiff = cameraPos.Z - tongueCenter.Z;
 }
 
 // Called every frame
@@ -63,60 +60,66 @@ void ATongue::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (_isPressed) {
+		attackHoldTimer += DeltaTime;
 		AttackProbe();
 	}
-	if(_isThrown) {
-		AttackTick(DeltaTime);
-		UpdateAttached();
-	}
-	if(_isReturning) {
+
+	switch (state) {
+	case TONGUE_STATE::Returning:
 		ReturnTongueTick(DeltaTime);
 		UpdateAttached();
-	} 
+		break;
+	case TONGUE_STATE::Thrown:
+		AttackTick(DeltaTime);
+		UpdateAttached();
+		break;
+	}
 }
 
 void ATongue::AttackPressed()
 {
-	if(!_isPressed && !_isThrown && !_isReturning){
-		attackTimer = 0.f;
+	if(!_isPressed){
+		attackHoldTimer = 0.f;
 		_isPressed = true;
 	}
 }
 
-void ATongue::AttackReleased()
-{
-	if (_isPressed && !_isReturning) {
+void ATongue::AttackReleased() {
+	if (_isPressed) {
 		_isPressed = false;
-		Attack();
+
+		if (lastProbeSucceed) {
+			if (state == TONGUE_STATE::Idle) {
+				Attack();
+			}
+		} else {
+			_Frog->mouthClosing = (state == TONGUE_STATE::Idle);
+		}
 	}
 }
 
 void ATongue::Attack()
 {
-	if (!_isThrown) {
-		_isThrown = true;
-		AttackSetup();
-	}
+	AttackSetup();
 }
 
 void ATongue::AttackSetup()
 {
+	state = TONGUE_STATE::Thrown;
 	TonguePos = FVector(0.0f);
 	triggerShape->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	triggerShape->Activate();
-	current_x_2d = 0.0f;
-	current_y_2d = 0.0f;
-	timer = 0.0f;
+	fixedData = probeData;
+	timeInAir = 0.0f;
 }
 
 bool ATongue::IsAttackShouldEnd()
 {
-	return _isThrown && (timer >= timeToGround);
+	return (state == TONGUE_STATE::Thrown) && (timeInAir >= fixedData.timeToGround);
 }
 
 void ATongue::AttackEnd()
 {
-	_isThrown = false;
 	triggerShape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	triggerShape->Deactivate();
 }
@@ -128,12 +131,12 @@ void ATongue::AttackTick(float DeltaTime)
 		ReturnTongueSetup();
 		return;
 	}
-	timer += DeltaTime;
-	current_x_2d = horizontalVelocity * timer;
-	current_y_2d = a * (current_x_2d - x_intersect) * (current_x_2d - x_intersect) + y_intersect;
+	timeInAir += DeltaTime;
+	current_x_2d = fixedData.horizontalVelocity * timeInAir;
+	current_y_2d = fixedData.parabolaParams.a * (current_x_2d - fixedData.x_intersect) * (current_x_2d - fixedData.x_intersect) + fixedData.y_intersect;
 	TonguePos = FVector(
-		current_x_2d * cos(horizontalAngle),
-		current_x_2d * sin(horizontalAngle),
+		current_x_2d * sin(fixedData.horizontalAngle),
+		-current_x_2d * cos(fixedData.horizontalAngle),
 		current_y_2d
 	);
 	triggerShape->SetRelativeLocation(TonguePos + tongueCenter);
@@ -147,23 +150,23 @@ void ATongue::AttackProbe()
 	float beta = _Frog->_verticalRotation * (PI / 180.f);
 	if (
 		std::abs(alpha) < PI / 2
-		&& x_intersect_test / distanceToCamera >= std::abs(tanf(alpha))//horizontalAngle of tongue must be less than 90 degrees
+		&& x_intersect_test / distanceDiff >= std::abs(tanf(alpha))//horizontalAngle of tongue must be less than 90 degrees
 		) {
-		if (float sin_required = sinf(alpha) * distanceToCamera / x_intersect_test; std::abs(sin_required) <= PI / 2) {
+		if (float sin_required = sinf(alpha) * distanceDiff / x_intersect_test; std::abs(sin_required) <= PI / 2) {//this is bunch of conclusions from stereometry
 			float horizontalAngle_test = alpha + asinf(sin_required);
-			if (float y_intersect_test = x_intersect_test * sinf(horizontalAngle_test) / sinf(alpha) * tanf(beta) + b;
+			if (float y_intersect_test = x_intersect_test * sinf(horizontalAngle_test) / sinf(alpha) * tanf(beta) + heightDiff;
 				y_intersect_test > 0.001f
 				&& y_intersect_test / x_intersect_test <= tanf(PI / 4)
 				) {
-				x_intersect = x_intersect_test;
-				y_intersect = y_intersect_test;
-				verticalAngle = atanf(y_intersect / x_intersect);
-				horizontalAngle = horizontalAngle_test;
+				probeData.x_intersect = x_intersect_test;
+				probeData.y_intersect = y_intersect_test;
+				probeData.verticalAngle = atanf(probeData.y_intersect / probeData.x_intersect);
+				probeData.horizontalAngle = horizontalAngle_test;
 
-				a = -y_intersect / (x_intersect * x_intersect);
-				horizontalVelocity = tongueSpeed * cosf(verticalAngle);
-				timeToGround = max_length / horizontalVelocity;
-				horizontalAngle -= PI / 2.0f;//spring arm rotation
+				probeData.parabolaParams.a = -y_intersect_test / (x_intersect_test * x_intersect_test);
+				probeData.horizontalVelocity = tongueSpeed * cosf(probeData.verticalAngle);
+				probeData.timeToGround = max_length / probeData.horizontalVelocity;
+
 				lastProbeSucceed = true;
 			}
 		}
@@ -179,7 +182,7 @@ void ATongue::UpdateAttached()
 
 void ATongue::ReturnTongueSetup()
 {
-	_isReturning = true;
+	state = TONGUE_STATE::Returning;
 	prevPos = TonguePos;
 	initDist = (TonguePos - tongueCenter).Length();
 	factor = 1.0f;
@@ -200,19 +203,22 @@ void ATongue::ReturnTongueTick(float DeltaTime)
 
 bool ATongue::IsTongueReturned()
 {
-	return (_isReturning && factor <= 0.f);
+	return (state == TONGUE_STATE::Returning) && (factor <= 0.f);
 }
 
 void ATongue::TongueReturnEnd()
 {
-	_isReturning = false;
+	state = TONGUE_STATE::Idle;
 	//TODO SCORE
 	//TODO unused fly array
 	for (uint8 it = 0; it < AttachedEatable.size(); ++it) {
 		AttachedEatable[it]->SetActorHiddenInGame(true);
 	}
 	AttachedEatable.clear();
-	_Frog->mouthClosing = true;
+
+	if (!_isPressed) {
+		_Frog->mouthClosing = true;
+	}
 }
 
 void ATongue::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

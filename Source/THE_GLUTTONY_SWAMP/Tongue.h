@@ -13,6 +13,37 @@
 class ABasicFrog;
 class AEatable;
 
+struct ParabolaParams {
+	float a;
+	float b;
+	float c;
+};
+
+struct ThrowData {
+	//trajectory of throw
+	ParabolaParams parabolaParams;
+	//x-coord of intersection point
+	float x_intersect;
+	//y-coord of intersection point
+	float y_intersect;
+	//angle of line, casted from tongue center, that intersect perpendicular from center of screen (camera)
+	float verticalAngle;
+	//angle of line, casted from tongue center, that intersect perpendicular from center of screen (camera)
+	float horizontalAngle;
+	//literaly
+	float timeToGround;
+	//of tongue
+	float horizontalVelocity;
+	//of tongue
+	float verticalVelocity;
+};
+
+enum class TONGUE_STATE : uint8 {
+	Thrown = 0,
+	Returning,
+	Idle
+};
+
 UCLASS()
 class THE_GLUTTONY_SWAMP_API ATongue : public AActor
 {
@@ -89,42 +120,47 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue")
 	float tongueSpeed = 500.f;
 
-	float timeToGround;
-	float horizontalVelocity;
-	float verticalVelocity;
+	//height difference between camera and tongue
+	float heightDiff;
+	//distance difference (Y projection) between camera and tongue
+	float distanceDiff;
 
-	// for parabola-trajectory
-	float b;
-	float a;
+	ThrowData probeData;
+	ThrowData fixedData;
+	//current x-coord of parabola
 	float current_x_2d;
+	//current y-coord of parabola
 	float current_y_2d;
-	float verticalAngle;
-	float horizontalAngle;
-	float timer;
-	float distanceToCamera;
+
+	//literaly
+	float timeInAir;
+	//Whether the last probe function succeeded
 	bool lastProbeSucceed;
+	//time elapsed since last attack pressed
+	float attackHoldTimer;
 
-	float attackTimer;
-
-	float x_intersect;
-	float y_intersect;
-
+	//owner frog
 	ABasicFrog* _Frog;
 
+	//pointer array with attachables
 	std::vector<AEatable*> AttachedEatable;
+	//maximum attached flies
 	uint8 cap;
 
 	//for return tongue
 	FVector prevPos;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Eating")
 	float factor;
 	float initDist;
 	float returnTime;
 	float returnVelocity;
 
-	bool _isThrown;
+	//DEPRECATED
+	//bool _isThrown;
+	//bool _isReturning;
+
 	bool _isPressed;
-	bool _isReturning;
+
+	TONGUE_STATE state;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Tongue", meta = (AllowPrivateAccess = "true"))

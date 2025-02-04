@@ -3,6 +3,7 @@
 #include "BasicFrog.h"
 #include "FrogAnimInstance.h"
 #include "Tongue.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ABasicFrog::ABasicFrog()
@@ -13,6 +14,12 @@ ABasicFrog::ABasicFrog()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	//USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	//RootComponent = Root;
+
+	//GetCapsuleComponent()->SetupAttachment(RootComponent);
+	//GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
 	auto frogMovement = GetCharacterMovement();
 	frogMovement->MovementMode = EMovementMode::MOVE_Falling;
@@ -77,16 +84,21 @@ void ABasicFrog::LookUp(float delta)
 void ABasicFrog::AttackPressed()
 {
 	_Tongue->AttackPressed();
-	StartEatAnimation();
+
+	if (EatStateFactor <= 0.f) {
+		StartEatAnimation();
+	} else if (mouthClosing) {
+		mouthClosing = false;
+		mouthOpening = true;
+	}
 }
 
 void ABasicFrog::AttackReleased()
 {
-	if (_Tongue->lastProbeSucceed) {
-		_Tongue->AttackReleased();
-	}
-	else {
-		EndEatAnimation();
+	_Tongue->AttackReleased();
+
+	if (_Tongue->state == TONGUE_STATE::Idle) {
+		mouthClosing = true;
 	}
 }
 
