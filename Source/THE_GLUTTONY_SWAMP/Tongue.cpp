@@ -15,6 +15,9 @@ ATongue::ATongue()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	RootComponent = Root;
+
 	_tongueSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Tongue"));
 	_tongueSkeletalMesh->SetupAttachment(RootComponent);
 	_tongueSkeletalMesh->BoundsScale = 50.f;

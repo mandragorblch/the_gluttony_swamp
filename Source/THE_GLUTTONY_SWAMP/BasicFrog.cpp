@@ -15,17 +15,25 @@ ABasicFrog::ABasicFrog()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	//USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	//RootComponent = Root;
+	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	RootComponent = Root;
 
-	//GetCapsuleComponent()->SetupAttachment(RootComponent);
-	//GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	_FixForRotation = CreateDefaultSubobject<USceneComponent>(TEXT("FixForRotation"));
+	_FixForRotation->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	_FixForRotation->SetRelativeLocation(FVector(0.f, 12.f, 0.f));
+	_FixForRotation->SetRelativeRotation(FRotator(0.0f, 0.0f, -90.0f));
+
+	GetCapsuleComponent()->SetupAttachment(RootComponent);
+	GetCapsuleComponent()->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
+	GetMesh()->AttachToComponent(_FixForRotation, FAttachmentTransformRules::KeepRelativeTransform);
+	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	GetMesh()->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 
 	auto frogMovement = GetCharacterMovement();
 	frogMovement->MovementMode = EMovementMode::MOVE_Falling;
 
 	_SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	_SpringArmComponent->SetupAttachment(RootComponent);
+	_SpringArmComponent->SetupAttachment(_FixForRotation);
 	_SpringArmComponent->TargetArmLength = 0.f;
 	_SpringArmComponent->SetRelativeLocation(FVector(0.0f, 100.0f, 50.0f));
 	_SpringArmComponent->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
@@ -43,7 +51,7 @@ void ABasicFrog::BeginPlay()
 
 	TSubclassOf<AActor> BP_Tongue = LoadObject<UClass>(nullptr, TEXT("Blueprint'/Game/BP/BP_Tongue.BP_Tongue_C'"));
 	_Tongue = GetWorld()->SpawnActor<ATongue>(BP_Tongue, FVector(0.f), FRotator(0.f));
-	_Tongue->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+	_Tongue->AttachToComponent(_FixForRotation, FAttachmentTransformRules::KeepRelativeTransform);
 	_Tongue->_Frog = this;
 	_Tongue->Setup();
 
