@@ -64,6 +64,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UFrogAnimInstance* _AnimInstance;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* _FixForRotation;
+
 	void StartEatAnimation();
 
 	void UpdateEatAnimation(float DeltaTime);
