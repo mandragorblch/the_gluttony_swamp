@@ -48,6 +48,9 @@ void ATongue::BeginPlay()
 
 	triggerShape->OnComponentBeginOverlap.AddDynamic(this, &ATongue::OnOverlapBegin);
 	triggerShape->OnComponentEndOverlap.AddDynamic(this, &ATongue::OnOverlapEnd);
+
+	//TODO read from file
+	//max_length_x = maxTongueSpeed * maxTongueTime;
 }
 
 void ATongue::Setup()
@@ -68,14 +71,14 @@ void ATongue::Tick(float DeltaTime)
 	}
 
 	switch (state) {
-	case TONGUE_STATE::Returning:
-		ReturnTongueTick(DeltaTime);
-		UpdateAttached();
-		break;
-	case TONGUE_STATE::Thrown:
-		AttackTick(DeltaTime);
-		UpdateAttached();
-		break;
+		case TONGUE_STATE::Returning:
+			ReturnTongueTick(DeltaTime);
+			UpdateAttached();
+			break;
+		case TONGUE_STATE::Thrown:
+			AttackTick(DeltaTime);
+			UpdateAttached();
+			break;
 	}
 }
 
@@ -148,27 +151,34 @@ void ATongue::AttackTick(float DeltaTime)
 void ATongue::AttackProbe()
 {
 	lastProbeSucceed = false;
-	float x_intersect_test = 0.5f * max_length;
+	probeData.maxPossibleLength = probeData.maxPossibleLength < maxTongueLength ? tongueFullfilSpeed * (attackHoldTimer - shiftTimer) : maxTongueLength;
+	if (state == TONGUE_STATE::Idle) {
+		tongueFactor = probeData.maxPossibleLength / maxTongueLength;
+	}
+
 	float alpha = _Frog->_horizontalRotation * (PI / 180.f);
 	float beta = _Frog->_verticalRotation * (PI / 180.f);
-	if (
-		std::abs(alpha) < PI / 2
-		&& x_intersect_test / distanceDiff >= std::abs(tanf(alpha))//horizontalAngle of tongue must be less than 90 degrees
-		) {
-		if (float sin_required = sinf(alpha) * distanceDiff / x_intersect_test; std::abs(sin_required) <= PI / 2) {//this is bunch of conclusions from stereometry
-			float horizontalAngle_test = alpha + asinf(sin_required);
-			if (float y_intersect_test = x_intersect_test * sinf(horizontalAngle_test) / sinf(alpha) * tanf(beta) + heightDiff;
-				y_intersect_test > 0.001f
-				&& y_intersect_test / x_intersect_test <= tanf(PI / 4)
-				) {
-				probeData.x_intersect = x_intersect_test;
-				probeData.y_intersect = y_intersect_test;
-				probeData.verticalAngle = atanf(probeData.y_intersect / probeData.x_intersect);
-				probeData.horizontalAngle = horizontalAngle_test;
 
-				probeData.parabolaParams.a = -y_intersect_test / (x_intersect_test * x_intersect_test);
-				probeData.horizontalVelocity = tongueSpeed * cosf(probeData.verticalAngle);
-				probeData.timeToGround = max_length / probeData.horizontalVelocity;
+	probeData.x_intersect = 0.5f * probeData.maxPossibleLength;
+	if (std::abs(alpha) < PI / 2
+		&& probeData.x_intersect / distanceDiff >= std::abs(tanf(alpha))//horizontalAngle of tongue must be less than 90 degrees
+		)
+	{
+		if (float sin_required = sinf(alpha) * distanceDiff / probeData.x_intersect;
+			std::abs(sin_required) <= PI / 2) //this is bunch of conclusions from stereometry
+		{
+			probeData.horizontalAngle = alpha + asinf(sin_required);
+			if (probeData.y_intersect = probeData.x_intersect * sinf(probeData.horizontalAngle) / sinf(alpha) * tanf(beta) + heightDiff;
+				probeData.y_intersect > 0.001f
+				&& probeData.y_intersect / probeData.x_intersect <= tanf(PI / 4)
+				) 
+			{
+				probeData.verticalAngle = atanf(probeData.y_intersect / probeData.x_intersect);
+				//probeData.verticalAngle = asinf(probeData.y_intersect / (0.5f * maxTongueSpeed * probeData.timeToGround));
+
+				probeData.parabolaParams.a = -probeData.y_intersect / (probeData.x_intersect * probeData.x_intersect);
+				probeData.horizontalVelocity = maxTongueSpeed * cosf(probeData.verticalAngle);
+				probeData.timeToGround = probeData.maxPossibleLength / probeData.horizontalVelocity;
 
 				lastProbeSucceed = true;
 			}
@@ -188,30 +198,33 @@ void ATongue::ReturnTongueSetup()
 	state = TONGUE_STATE::Returning;
 	prevPos = TonguePos;
 	initDist = (TonguePos - tongueCenter).Length();
-	factor = 1.0f;
+	tongueReturnFactor = 1.0f;
 	returnVelocity = initDist / returnTime;
+	fixedTongueFactor = tongueFactor;
 }
 
 void ATongue::ReturnTongueTick(float DeltaTime)
 {
-	factor -= (returnVelocity * DeltaTime) / initDist;
+	tongueReturnFactor -= (returnVelocity * DeltaTime) / initDist;
 	if (IsTongueReturned()) {
 		TongueReturnEnd();
-		factor = 0.f;
-		TonguePos = FVector(0.f, 0.f, 0.f);
 		return;
 	}
-	TonguePos = factor * prevPos;
+	TonguePos = tongueReturnFactor * prevPos;
+	tongueFactor = fixedTongueFactor * tongueReturnFactor;
 }
 
 bool ATongue::IsTongueReturned()
 {
-	return (state == TONGUE_STATE::Returning) && (factor <= 0.f);
+	return (state == TONGUE_STATE::Returning) && (tongueFactor <= 0.f);
 }
 
 void ATongue::TongueReturnEnd()
 {
 	state = TONGUE_STATE::Idle;
+	tongueFactor = 0.f;
+	TonguePos = FVector(0.f, 0.f, 0.f);
+	probeData.maxPossibleLength = 0.0f;
 	//TODO SCORE
 	//TODO unused fly array
 	for (uint8 it = 0; it < AttachedEatable.size(); ++it) {
@@ -221,6 +234,9 @@ void ATongue::TongueReturnEnd()
 
 	if (!_isPressed) {
 		_Frog->mouthClosing = true;
+		shiftTimer = 0.f;
+	} else {
+		shiftTimer = attackHoldTimer;
 	}
 }
 
