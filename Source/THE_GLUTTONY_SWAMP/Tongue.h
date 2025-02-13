@@ -31,6 +31,7 @@ struct ThrowData {
 	//angle of line, casted from tongue center, that intersect perpendicular from center of screen (camera)
 	float horizontalAngle;
 	//literaly
+	float maxPossibleLength;
 	float timeToGround;
 	//of tongue
 	float horizontalVelocity;
@@ -116,9 +117,13 @@ public:
 	FVector tongueCenter;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue")
-	float max_length = 500.0f;
+	float maxTongueLength = 500.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue")
-	float tongueSpeed = 500.f;
+	float maxTongueSpeed = 500.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue")
+	float tongueFullfilBarTime = 3.0f;
+
+	float tongueFullfilSpeed = maxTongueLength / tongueFullfilBarTime;
 
 	//height difference between camera and tongue
 	float heightDiff;
@@ -138,6 +143,8 @@ public:
 	bool lastProbeSucceed;
 	//time elapsed since last attack pressed
 	float attackHoldTimer;
+	//time shift from factor sets to 0
+	float shiftTimer;
 
 	//owner frog
 	ABasicFrog* _Frog;
@@ -149,14 +156,18 @@ public:
 
 	//for return tongue
 	FVector prevPos;
-	float factor;
+	//progress of tongue to the destination point
+	float tongueFactor;
+	//interpolating return factor
+	float tongueReturnFactor;
+	//for interpolating return factor
+	float fixedTongueFactor;
+	//fixed destination point
 	float initDist;
+	//it is what it is
 	float returnTime;
+	//it is what it is
 	float returnVelocity;
-
-	//DEPRECATED
-	//bool _isThrown;
-	//bool _isReturning;
 
 	bool _isPressed;
 
