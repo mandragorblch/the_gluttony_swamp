@@ -9,11 +9,16 @@
 class ABasicFrog;
 
 UENUM(BlueprintType)
-enum class EFrogState : uint8 {
+enum class ELegsState : uint8 {
 	Idle = 0,
-	Eat,
 	Swim,
 	Jump
+};
+
+UENUM(BlueprintType)
+enum class EMouthState : uint8 {
+	Idle = 0,
+	Eat
 };
 
 UCLASS()
@@ -29,7 +34,10 @@ public:
 	float Speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frog Params")
-	EFrogState State;
+	ELegsState legsState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frog Params")
+	EMouthState mouthState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frog Params")
 	ABasicFrog* OwnedPawn;

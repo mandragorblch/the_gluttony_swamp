@@ -145,7 +145,8 @@ void ATongue::AttackTick(float DeltaTime)
 		-current_x_2d * cos(fixedData.horizontalAngle),
 		current_y_2d
 	);
-	triggerShape->SetRelativeLocation(TonguePos + tongueCenter);
+	TongueRot = FRotator(0.0f, fixedData.horizontalAngle * (180.f / PI), 0.0f);
+	triggerShape->SetRelativeLocation(tongueCenter + TonguePos);
 }
 
 void ATongue::AttackProbe()
@@ -223,6 +224,7 @@ void ATongue::TongueReturnEnd()
 {
 	state = TONGUE_STATE::Idle;
 	tongueFactor = 0.f;
+	TongueRot = FRotator(0.0f, 0.f, 0.0f);
 	TonguePos = FVector(0.f, 0.f, 0.f);
 	probeData.maxPossibleLength = 0.0f;
 	//TODO SCORE

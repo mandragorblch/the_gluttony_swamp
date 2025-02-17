@@ -37,6 +37,10 @@ public:
 
 	void LookUp(float delta);
 
+	void JumpPressed();
+
+	void JumpReleased();
+
 	UFUNCTION(BlueprintCallable)
 	void AttackPressed();
 

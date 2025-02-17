@@ -8,7 +8,6 @@
 // Sets default values
 ABasicFrog::ABasicFrog()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationPitch = false;
@@ -25,12 +24,17 @@ ABasicFrog::ABasicFrog()
 
 	GetCapsuleComponent()->SetupAttachment(RootComponent);
 	GetCapsuleComponent()->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_Pawn); // or another appropriate type
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
+	GetCapsuleComponent()->BodyInstance.bUseCCD = true;
+	GetCapsuleComponent()->SetSimulatePhysics(true);
+
 	GetMesh()->AttachToComponent(_FixForRotation, FAttachmentTransformRules::KeepRelativeTransform);
-	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 
-	auto frogMovement = GetCharacterMovement();
-	frogMovement->MovementMode = EMovementMode::MOVE_Falling;
+	GetCharacterMovement()->MovementMode = EMovementMode::MOVE_Falling;
 
 	_SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	_SpringArmComponent->SetupAttachment(_FixForRotation);
@@ -73,8 +77,14 @@ void ABasicFrog::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis("Turn", this, &ABasicFrog::Turn);
-	PlayerInputComponent->BindAxis("LookUp", this, &ABasicFrog::LookUp);
+	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ABasicFrog::Turn);
+	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ABasicFrog::LookUp);
+
+	PlayerInputComponent->BindAction(TEXT("Attack"), IE_Pressed, this, &ABasicFrog::AttackPressed);
+	PlayerInputComponent->BindAction(TEXT("Attack"), IE_Released, this, &ABasicFrog::AttackReleased);
+
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ABasicFrog::JumpPressed);
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ABasicFrog::JumpReleased);
 }
 
 void ABasicFrog::Turn(float delta)
@@ -87,6 +97,24 @@ void ABasicFrog::LookUp(float delta)
 {
 	if (abs(_verticalRotation) <= 90.f) _verticalRotation += delta * _mouseSensivity * GetWorld()->GetDeltaSeconds();
 	else _verticalRotation = std::signbit(_verticalRotation) ? -90.f : 90.f;
+}
+
+void ABasicFrog::JumpPressed()
+{
+	float force_scalar = 1500.0f;
+	float z_rot = _horizontalRotation / (180.f / PI);
+	float x_rot = _verticalRotation / (180.f / PI);
+	//FVector direction = FVector(-sinf(z_rot), cosf(x_rot) * cosf(z_rot), cosf(z_rot) * sinf(x_rot));
+	FVector direction = FVector(-cosf(x_rot) * sinf(z_rot), cosf(x_rot) * cosf(z_rot), sinf(x_rot));
+	FVector force = force_scalar * direction;
+	GetCapsuleComponent()->SetPhysicsLinearVelocity(force);
+
+	_AnimInstance->legsState = ELegsState::Jump;
+}
+
+void ABasicFrog::JumpReleased()
+{
+	_AnimInstance->legsState = ELegsState::Idle;
 }
 
 void ABasicFrog::AttackPressed()
@@ -112,7 +140,7 @@ void ABasicFrog::AttackReleased()
 
 void ABasicFrog::StartEatAnimation()
 {
-	_AnimInstance->State = EFrogState::Eat;
+	_AnimInstance->mouthState = EMouthState::Eat;
 	EatStateFactor = 0.f;
 	mouthOpening = true;
 }
@@ -132,5 +160,5 @@ void ABasicFrog::UpdateEatAnimation(float DeltaTime)
 
 void ABasicFrog::EndEatAnimation()
 {
-	_AnimInstance->State = EFrogState::Idle;
+	_AnimInstance->mouthState = EMouthState::Idle;
 }

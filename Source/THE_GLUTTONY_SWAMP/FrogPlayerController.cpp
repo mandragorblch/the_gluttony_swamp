@@ -41,16 +41,6 @@ void AFrogPlayerController::OnSpectatorSwitched()
 	isSpectator = !isSpectator;
 }
 
-void AFrogPlayerController::AttackPressed()
-{
-	_Frog->AttackPressed();
-}
-
-void AFrogPlayerController::AttackReleased()
-{
-	_Frog->AttackReleased();
-}
-
 void AFrogPlayerController::SetupInputComponent()
 {
 	// set up gameplay key bindings
@@ -61,9 +51,6 @@ void AFrogPlayerController::SetupInputComponent()
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
-
-	InputComponent->BindAction(TEXT("Attack"), IE_Pressed, this, &AFrogPlayerController::AttackPressed);
-	InputComponent->BindAction(TEXT("Attack"), IE_Released, this, &AFrogPlayerController::AttackReleased);
 
 	InputComponent->BindAction(TEXT("SpectatorSwitch"), IE_Pressed, this, &AFrogPlayerController::OnSpectatorSwitched);
 }

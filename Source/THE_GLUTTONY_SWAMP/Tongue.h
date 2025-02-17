@@ -66,7 +66,7 @@ public:
 	FVector TonguePos;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tongue")
-	FVector TongueVel;
+	FRotator TongueRot;
 
 	void AttackPressed();
 
@@ -115,6 +115,7 @@ public:
 
 	FVector cameraPos;
 	FVector tongueCenter;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue")
 	float maxTongueLength = 500.f;
