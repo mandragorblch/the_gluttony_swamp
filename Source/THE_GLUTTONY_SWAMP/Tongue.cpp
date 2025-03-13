@@ -3,6 +3,7 @@
 #include "Tongue.h"
 #include "TongueAnimInstance.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "BasicFrog.h"
 #include "Eatable.h"
 #include <cmath>
@@ -117,6 +118,8 @@ void ATongue::AttackSetup()
 	triggerShape->Activate();
 	fixedData = probeData;
 	timeInAir = 0.0f;
+	worldPosShift = FVector(0.0f);
+	lastPos = _Frog->GetCapsuleComponent()->GetComponentTransform().GetLocation();
 }
 
 bool ATongue::IsAttackShouldEnd()
@@ -145,6 +148,13 @@ void ATongue::AttackTick(float DeltaTime)
 		-current_x_2d * cos(fixedData.horizontalAngle),
 		current_y_2d
 	);
+
+ 	worldPosShift = _Frog->GetCapsuleComponent()->GetComponentTransform().GetLocation() - lastPos;
+
+	FString VecString = FString::Printf(TEXT("Vector: X=%.2f, Y=%.2f, Z=%.2f"), worldPosShift.X, worldPosShift.Y, worldPosShift.Z);
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, VecString);
+
+	TonguePos -= worldPosShift;
 	TongueRot = FRotator(0.0f, fixedData.horizontalAngle * (180.f / PI), 0.0f);
 	triggerShape->SetRelativeLocation(tongueCenter + TonguePos);
 }

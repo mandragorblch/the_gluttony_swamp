@@ -175,6 +175,8 @@ public:
 	TONGUE_STATE state;
 
 private:
+	FVector lastPos;
+	FVector worldPosShift;
 	UPROPERTY(EditAnywhere, Category = "Tongue", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* _tongueSkeletalMesh;
 };

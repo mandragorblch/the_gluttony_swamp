@@ -23,12 +23,6 @@ ABasicFrog::ABasicFrog()
 	_FixForRotation->SetRelativeRotation(FRotator(0.0f, 0.0f, -90.0f));
 
 	GetCapsuleComponent()->SetupAttachment(RootComponent);
-	GetCapsuleComponent()->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetCapsuleComponent()->SetCollisionObjectType(ECC_Pawn); // or another appropriate type
-	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
-	GetCapsuleComponent()->BodyInstance.bUseCCD = true;
-	GetCapsuleComponent()->SetSimulatePhysics(true);
 
 	GetMesh()->AttachToComponent(_FixForRotation, FAttachmentTransformRules::KeepRelativeTransform);
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
@@ -59,6 +53,13 @@ void ABasicFrog::BeginPlay()
 	_Tongue->_Frog = this;
 	_Tongue->Setup();
 
+	GetCapsuleComponent()->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_Pawn); // or another appropriate type
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
+	GetCapsuleComponent()->BodyInstance.bUseCCD = true;
+	GetCapsuleComponent()->SetSimulatePhysics(true);
+
 	_AnimInstance = Cast<UFrogAnimInstance>(GetMesh()->GetAnimInstance());
 }
 
@@ -66,6 +67,8 @@ void ABasicFrog::BeginPlay()
 void ABasicFrog::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	GetCapsuleComponent()->SetRelativeRotation(FRotator(0.0f, 180.0f, 90.0f));
 
 	_CameraComponent->SetRelativeRotation(FRotator(_verticalRotation, _horizontalRotation, 0.f));
 
@@ -101,9 +104,9 @@ void ABasicFrog::LookUp(float delta)
 
 void ABasicFrog::JumpPressed()
 {
-	float force_scalar = 1500.0f;
+	float force_scalar = 500.0f;
 	float z_rot = _horizontalRotation / (180.f / PI);
-	float x_rot = _verticalRotation / (180.f / PI);
+	float x_rot = PI / 4/*_verticalRotation / (180.f / PI)*/;
 	//FVector direction = FVector(-sinf(z_rot), cosf(x_rot) * cosf(z_rot), cosf(z_rot) * sinf(x_rot));
 	FVector direction = FVector(-cosf(x_rot) * sinf(z_rot), cosf(x_rot) * cosf(z_rot), sinf(x_rot));
 	FVector force = force_scalar * direction;
