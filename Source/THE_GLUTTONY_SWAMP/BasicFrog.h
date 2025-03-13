@@ -47,6 +47,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttackReleased();
 
+	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
+		const FHitResult& Hit) override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tongue", meta = (AllowPrivateAccess = "true"))
 	ATongue* _Tongue;
 

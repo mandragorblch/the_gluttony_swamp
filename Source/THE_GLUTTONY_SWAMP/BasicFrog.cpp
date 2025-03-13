@@ -3,6 +3,8 @@
 #include "BasicFrog.h"
 #include "FrogAnimInstance.h"
 #include "Tongue.h"
+#include "Landscape.h"
+#include "LandscapeProxy.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -59,6 +61,14 @@ void ABasicFrog::BeginPlay()
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
 	GetCapsuleComponent()->BodyInstance.bUseCCD = true;
 	GetCapsuleComponent()->SetSimulatePhysics(true);
+	GetCapsuleComponent()->SetNotifyRigidBodyCollision(true);
+	GetCapsuleComponent()->SetPhysicsMaxAngularVelocityInRadians(0.0f);
+	GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
+	GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
+	GetCapsuleComponent()->BodyInstance.bLockZRotation = true;
+	GetCapsuleComponent()->SetConstraintMode(EDOFMode::SixDOF);
+	//GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ABasicFrog::NotifyHit);
+	//GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AMyActor::NotifyHit);
 
 	_AnimInstance = Cast<UFrogAnimInstance>(GetMesh()->GetAnimInstance());
 }
@@ -68,7 +78,7 @@ void ABasicFrog::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	GetCapsuleComponent()->SetRelativeRotation(FRotator(0.0f, 180.0f, 90.0f));
+	//GetCapsuleComponent()->SetRelativeRotation(FRotator(0.0f, 180.0f, 90.0f));
 
 	_CameraComponent->SetRelativeRotation(FRotator(_verticalRotation, _horizontalRotation, 0.f));
 
@@ -104,6 +114,7 @@ void ABasicFrog::LookUp(float delta)
 
 void ABasicFrog::JumpPressed()
 {
+	GetCapsuleComponent()->SetSimulatePhysics(true);
 	float force_scalar = 500.0f;
 	float z_rot = _horizontalRotation / (180.f / PI);
 	float x_rot = PI / 4/*_verticalRotation / (180.f / PI)*/;
@@ -138,6 +149,14 @@ void ABasicFrog::AttackReleased()
 
 	if (_Tongue->state == TONGUE_STATE::Idle) {
 		mouthClosing = true;
+	}
+}
+
+void ABasicFrog::NotifyHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (ALandscapeProxy* Landscape = Cast<ALandscapeProxy>(OtherActor); Landscape != nullptr)
+	{
+		GetCapsuleComponent()->SetSimulatePhysics(false);
 	}
 }
 
